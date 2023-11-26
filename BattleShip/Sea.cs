@@ -17,12 +17,17 @@ namespace BattleShip
             
         }
         
-        private static Dictionary<(int, int), SeaWaveState> waters = new();
+        private static Waters waters = new();
         private readonly SemaphoreSlim mutex = new(1, 1);
         
         public bool TryGetShip((int, int) water, out Ship? ship)
         {
             return waters.TryGetValue(water, ship);
+        }
+
+        public async Task RemoveShip(Ship ship)
+        {
+            
         }
         
         public async Task AddShip(Ship ship)
@@ -46,7 +51,5 @@ namespace BattleShip
                 mutex.Release();
             }
         }
-        
-        public void MoveShip((int, int) water, )
     }
 }
