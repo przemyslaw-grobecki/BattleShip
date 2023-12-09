@@ -25,13 +25,6 @@ namespace BattleShipGui
         private Sea sea = Sea.GetInstance();
         public MainWindow()
         {
-            var BlueWaters = new ObservableCollection<int>();
-            BlueWaters.Add(1);
-            BlueWaters.Add(2);
-            BlueWaters.Add(3);
-            BlueWaters.Add(4);
-            BlueWaters.Add(5);
-            DataContext = BlueWaters;
             InitializeComponent();
         }
     }

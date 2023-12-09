@@ -1,3 +1,5 @@
+using System.Drawing;
+
 namespace BattleShip;
 
 public class Waters 
@@ -23,37 +25,34 @@ public class Waters
         {
             return false;
         }
-        if (States.TryGetValue(key, out var water))
+
+        if (!States.TryGetValue(key, out var water)) return false;
+        if (newState is SeaWaveState.ShipNearby && water is SeaWaveState.ShipNearby)
         {
-            if (newState is SeaWaveState.ShipNearby && water is SeaWaveState.ShipNearby)
-            {
-                water = water + 1;
-                return true;
-            }
-            
-            if (newState is SeaWaveState.WreckNearby && water is SeaWaveState.WreckNearby)
-            {
-                water = water - 1;
-                return true;
-            }
-
-            if (newState is SeaWaveState.Free)
-            {
-                if (water is SeaWaveState.ShipNearby)
-                {
-                    water = water - 1;
-                    return true;
-                }
-
-                if (water is SeaWaveState.WreckNearby)
-                {
-                    water = water + 1;
-                    return true;
-                }
-            }
-            water = newState;
+            States[key] = water + 1;
+            return true;
         }
-        return false;
+            
+        if (newState is SeaWaveState.WreckNearby && water is SeaWaveState.WreckNearby)
+        {
+            States[key] = water - 1;
+            return true;
+        }
+
+        if (newState is SeaWaveState.Free)
+        {
+            switch (water)
+            {
+                case SeaWaveState.ShipNearby:
+                    States[key] = water - 1;
+                    return true;
+                case SeaWaveState.WreckNearby:
+                    States[key] = water + 1;
+                    return true;
+            }
+        }
+        States[key] = newState;
+        return true;
     }
 
     public bool IsStateEqualTo((int, int) key, SeaWaveState seaWaveState)
