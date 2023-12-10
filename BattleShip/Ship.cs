@@ -2,13 +2,33 @@ namespace BattleShip
 {
     public record Ship
     {
+        public bool IsFinished = false;
+
         private const int LowerBoundaryInclusive = 0;
         private const int UpperBoundaryExclusive = 10;
+
+        public ShipOrientation Orientation
+        {
+            get
+            {
+                if (IsFinished)
+                {
+                    return Deck.Count switch
+                    {
+                        < 1 => ShipOrientation.Unknown,
+                        1 => ShipOrientation.Pointical,
+                        _ => Deck[1].Item1 - Deck[0].Item1 != 0 ? ShipOrientation.Horizontal : ShipOrientation.Vertical
+                    };
+                }
+
+                return ShipOrientation.Unknown;
+            }
+        }
+
         
         public ShipType Type { get; init; }
         public Team Team { get; init; }
-        public List<(int, int)> Deck { get; init; }
-
+        public List<(int, int)> Deck { get; init; } = new();
         public List<(int, int)> GetNeighbouringSpace()
         {
             var neighbouringSpace = new List<(int, int)>();

@@ -5,6 +5,6 @@ namespace BattleShip
         SingleMasted,
         DoubleMasted,
         TripleMasted,
-        FourMasted
+        QuadrupleMasted
     }
 }

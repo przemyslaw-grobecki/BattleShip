@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -10,10 +11,19 @@ namespace BattleShipGui;
 
 public class SeaViewModel : INotifyPropertyChanged
 {
+    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+    
     public SeaViewModel()
     {
-        BlueButtonClickCommand = new RelayCommand(BlueButtonClickhandler);
-        RedButtonClickCommand = new RelayCommand(RedButtonClickhandler);
+        BlueButtonClickCommand = new RelayCommand(BlueButtonClickHandler);
+        RedButtonClickCommand = new RelayCommand(RedButtonClickHandler);
+        SingleMastedShipBoardingButtonCommand = new RelayCommand(singleMastedShipBoardingButtonHandler);
+        DoubleMastedShipBoardingButtonCommand = new RelayCommand(doubleMastedShipBoardingButtonHandler);
+        TripleMastedShipBoardingButtonCommand = new RelayCommand(tripleMastedShipBoardingButtonHandler);
+        QuadrupleMastedShipBoardingButtonCommand = new RelayCommand(quadrupleMastedShipBoardingButtonHandler);
         BlueSea = new ObservableCollection<WaterButtonModel>();
         RedSea = new ObservableCollection<WaterButtonModel>();
         UpdateBlueSea();
@@ -21,26 +31,42 @@ public class SeaViewModel : INotifyPropertyChanged
     }
     
     public event PropertyChangedEventHandler? PropertyChanged;
-
-    protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
-
+    public Shipyard Shipyard { get; } = new();
+    public bool IsBlueSeaClickable => GameEngine.GetInstance().CurrentState is GameState.ShipBoarding;
+    public bool IsRedSeaClickable => GameEngine.GetInstance().CurrentState is GameState.ShipSinking;
     public ObservableCollection<WaterButtonModel> BlueSea { get; }
     public ObservableCollection<WaterButtonModel> RedSea { get; }
-    
     public ICommand BlueButtonClickCommand { get; }
 
-    private void BlueButtonClickhandler(object param)
+    private static int countdown = 0;
+    private async void BlueButtonClickHandler(object param)
     {
-        if (param is not WaterButtonModel entry)
+        if (param is not WaterButtonModel waterButtonModel)
         {
             return;
         }
-        
-        Sea.GetInstance().BlueWaters.TrySetState(entry.WaterIdentifier, SeaWaveState.Ship);
-        UpdateBlueSea();
+
+        if (Shipyard.CurrentShipBuilding is null) return;
+        try
+        {
+            Shipyard.CurrentShipBuilding.Extend(waterButtonModel.WaterIdentifier);
+            BlueSea.FirstOrDefault(water => water.WaterIdentifier == waterButtonModel.WaterIdentifier)!.Color =
+                new SolidColorBrush(Colors.Aqua);
+            OnPropertyChanged(nameof(BlueSea));
+            countdown--;
+            if (countdown == 0)
+            {
+                Shipyard.FinishBuilding(out var ship);
+                if (await Sea.GetInstance().TryBoardShip(ship!))
+                {
+                    UpdateBlueSea();
+                }
+            }
+        }
+        catch(Exception ex)
+        {
+            //nop
+        }
     }
     
     
@@ -62,7 +88,7 @@ public class SeaViewModel : INotifyPropertyChanged
     
     public ICommand RedButtonClickCommand { get; }
 
-    private void RedButtonClickhandler(object param)
+    private void RedButtonClickHandler(object param)
     {
         if (param is not WaterButtonModel entry)
         {
@@ -80,7 +106,7 @@ public class SeaViewModel : INotifyPropertyChanged
         var redSea = Sea.GetInstance().RedWaters.States;
         foreach (var water in redSea)
         {
-            RedSea.Add(new WaterButtonModel()
+            RedSea.Add(new WaterButtonModel
             {
                 WaterIdentifier = water.Key,
                 Color = ButtonColorMapper.Map(water.Value)
@@ -88,6 +114,42 @@ public class SeaViewModel : INotifyPropertyChanged
         }
         OnPropertyChanged(nameof(RedSea));
     }
+    
+    public ICommand SingleMastedShipBoardingButtonCommand { get; }
+    public bool IsBuildingSingleMastedPossible => Shipyard.IsBuildingSingleMastedPossible;
+    private readonly Action<object> singleMastedShipBoardingButtonHandler = param =>
+    {
+        var shipyard = param as Shipyard;
+        shipyard?.StartBuilding(ShipType.SingleMasted, Team.Blue);
+        countdown = 1;
+    };
+    
+    public ICommand DoubleMastedShipBoardingButtonCommand { get; }
+    public bool IsBuildingDoubleMastedPossible => Shipyard.IsBuildingDoubleMastedPossible;
+    private readonly Action<object> doubleMastedShipBoardingButtonHandler = param =>
+    {
+        var shipyard = param as Shipyard;
+        shipyard?.StartBuilding(ShipType.DoubleMasted, Team.Blue);
+        countdown = 2;
+    };
+    
+    public ICommand TripleMastedShipBoardingButtonCommand { get; }
+    public bool IsBuildingTripleMastedPossible => Shipyard.IsBuildingTripleMastedPossible;
+    private readonly Action<object> tripleMastedShipBoardingButtonHandler = param =>
+    {
+        var shipyard = param as Shipyard;
+        shipyard?.StartBuilding(ShipType.TripleMasted, Team.Blue);
+        countdown = 3;
+    };
+    
+    public ICommand QuadrupleMastedShipBoardingButtonCommand { get; }
+    public bool IsBuildingQuadrupleMastedPossible => Shipyard.IsBuildingQuadrupleMastedPossible;
+    private readonly Action<object> quadrupleMastedShipBoardingButtonHandler = param =>
+    {
+        var shipyard = param as Shipyard;
+        shipyard?.StartBuilding(ShipType.QuadrupleMasted, Team.Blue);
+        countdown = 4;
+    };
     
     private static class ButtonColorMapper
     {
@@ -107,7 +169,7 @@ public class SeaViewModel : INotifyPropertyChanged
 
         public static SeaWaveState Map(SolidColorBrush brush)
         {
-            Color color = ((SolidColorBrush)brush).Color;
+            Color color = brush.Color;
 
             if (color == Color.FromRgb(135, 206, 250))
             {

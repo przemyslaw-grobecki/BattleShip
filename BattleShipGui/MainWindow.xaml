@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BattleShipGui"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1200" Width="600">
+        Title="MainWindow" Height="800" Width="400">
     
     <Window.DataContext>
         <local:SeaViewModel/>
@@ -16,7 +16,7 @@
                 <ItemsControl ItemsSource="{Binding RedSea}" BorderThickness="2">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <UniformGrid Width="500" Height="500" Rows="10" Columns="10"/>
+                            <UniformGrid Width="200" Height="200" Rows="10" Columns="10"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -36,7 +36,7 @@
                 <ItemsControl ItemsSource="{Binding BlueSea}" BorderThickness="2">
                    <ItemsControl.ItemsPanel>
                        <ItemsPanelTemplate>
-                           <UniformGrid Width="500" Height="500" Rows="10" Columns="10"/>
+                           <UniformGrid Width="200" Height="200" Rows="10" Columns="10"/>
                        </ItemsPanelTemplate>
                    </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -53,10 +53,26 @@
             </Grid>
         </DockPanel>
         <StackPanel DockPanel.Dock="Right">
-            <Button>1</Button>
-            <Button>2</Button>
-            <Button>3</Button>
-            <Button>4</Button>
+            <Button Command="{Binding SingleMastedShipBoardingButtonCommand}"
+                    CommandParameter="{Binding Shipyard}"
+                    IsEnabled="{Binding IsBuildingSingleMastedPossible}">
+                1
+            </Button>
+            <Button Command="{Binding DoubleMastedShipBoardingButtonCommand}"
+                    CommandParameter="{Binding Shipyard}"
+                    IsEnabled="{Binding IsBuildingDoubleMastedPossible}">
+                2
+            </Button>
+            <Button Command="{Binding TripleMastedShipBoardingButtonCommand}"
+                    CommandParameter="{Binding Shipyard}"
+                    IsEnabled="{Binding IsBuildingTripleMastedPossible}">
+                3
+            </Button>
+            <Button Command="{Binding QuadrupleMastedShipBoardingButtonCommand}"
+                    CommandParameter="{Binding Shipyard}"
+                    IsEnabled="{Binding IsBuildingQuadrupleMastedPossible}">
+                4
+            </Button>
             <Button>Done</Button>
         </StackPanel>
     </DockPanel>
