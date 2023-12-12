@@ -59,7 +59,7 @@ public class ShipBuilder : IShipBuilderExtender, IShipBuilderFinisher
         shipToBuild = new Ship
         {
             Deck = shipToBuild.Deck
-                .OrderBy(x => shipToBuild.Orientation == ShipOrientation.Horizontal ? x.Item2 : x.Item1).ToList(),
+                .OrderBy(x => shipToBuild.Orientation == ShipOrientation.Vertical ? x.Item2 : x.Item1).ToList(),
             IsFinished = true,
             Team = shipToBuild.Team
         };

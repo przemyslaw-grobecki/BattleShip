@@ -47,6 +47,7 @@ public class SeaViewModel : INotifyPropertyChanged
         }
 
         if (Shipyard.CurrentShipBuilding is null) return;
+        if (!Sea.GetInstance().BlueWaters.IsStateEqualTo(waterButtonModel.WaterIdentifier, SeaWaveState.Free)) return;
         try
         {
             Shipyard.CurrentShipBuilding.Extend(waterButtonModel.WaterIdentifier);
@@ -155,14 +156,14 @@ public class SeaViewModel : INotifyPropertyChanged
     {
         public static SolidColorBrush Map(SeaWaveState seaWaveState)
         {
-            return seaWaveState switch
+            return (int)seaWaveState switch
             {
-                SeaWaveState.Free => new SolidColorBrush(Color.FromRgb(135, 206, 250)), // Azure
-                SeaWaveState.WreckNearby => new SolidColorBrush(Color.FromRgb(255, 127, 80)), // Coral
-                SeaWaveState.Wreck => new SolidColorBrush(Color.FromRgb(255, 0, 0)), // Red
-                SeaWaveState.ShipNearby => new SolidColorBrush(Color.FromRgb(169, 169, 169)), // Gray
-                SeaWaveState.Ship => new SolidColorBrush(Color.FromRgb(0, 255, 0)), // Chartreuse
-                SeaWaveState.Disturbed => new SolidColorBrush(Color.FromRgb(75, 0, 130)), // Indigo
+                0 => new SolidColorBrush(Color.FromRgb(135, 206, 250)), // Azure
+                < 0 and > -10  => new SolidColorBrush(Color.FromRgb(255, 127, 80)), // Coral
+                -10 => new SolidColorBrush(Color.FromRgb(255, 0, 0)), // Red
+                > 0 and < 10   => new SolidColorBrush(Color.FromRgb(169, 169, 169)), // Gray
+                10 => new SolidColorBrush(Color.FromRgb(0, 255, 0)), // Chartreuse
+                int.MaxValue => new SolidColorBrush(Color.FromRgb(75, 0, 130)), // Indigo
                 _ => throw new ArgumentOutOfRangeException(nameof(seaWaveState), seaWaveState, null)
             };
         }

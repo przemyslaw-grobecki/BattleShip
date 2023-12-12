@@ -35,10 +35,14 @@ namespace BattleShip
             var deckStart = Deck.First();
             if (Deck.Count == 1)
             {
-                foreach (var i in new[]{ -1,1 })
+                foreach (var i in new[]{ -1, 0, 1 })
                 {
-                    foreach (var j in new[]{ -1,1 })
+                    foreach (var j in new[]{ -1, 0, 1 })
                     {
+                        if (i == 0 && j == 0)
+                        {
+                            continue;
+                        }
                         var tempPosition = (deckStart.Item1 + i, deckStart.Item2 + j);
                         if (IsInBoundary(tempPosition))
                         {
@@ -51,21 +55,59 @@ namespace BattleShip
 
             var deckEnd = Deck.Last();
             bool isDeckHorizontal = (deckEnd.Item1 - deckStart.Item1) != 0;
-            (int, int) watersBehindTheShip;
-            (int, int) watersBeforeTheShip;
+            (int, int) watersBehindTheShip1;
+            (int, int) watersBeforeTheShip1;
+            (int, int) watersBehindTheShip2;
+            (int, int) watersBeforeTheShip2;
+            (int, int) watersBehindTheShip3;
+            (int, int) watersBeforeTheShip3;
             if (isDeckHorizontal)
             {
-                watersBehindTheShip = (deckStart.Item1 - 1, deckStart.Item2);
-                watersBeforeTheShip = (deckEnd.Item1 + 1, deckEnd.Item2);
+                watersBehindTheShip1 = (deckStart.Item1 - 1, deckStart.Item2);
+                watersBeforeTheShip1 = (deckEnd.Item1 + 1, deckEnd.Item2);
+                watersBehindTheShip2 = (deckStart.Item1 - 1, deckStart.Item2 + 1);
+                watersBeforeTheShip2 = (deckEnd.Item1 + 1, deckEnd.Item2 + 1);
+                watersBehindTheShip3 = (deckStart.Item1 - 1, deckStart.Item2 - 1);
+                watersBeforeTheShip3 = (deckEnd.Item1 + 1, deckEnd.Item2 - 1);
             }
             else
             {
-                watersBehindTheShip = (deckStart.Item1, deckStart.Item2 - 1);
-                watersBeforeTheShip = (deckEnd.Item1, deckEnd.Item2 + 1);
+                watersBehindTheShip1 = (deckStart.Item1, deckStart.Item2 - 1);
+                watersBeforeTheShip1 = (deckEnd.Item1, deckEnd.Item2 + 1);
+                watersBehindTheShip2 = (deckStart.Item1 + 1, deckStart.Item2 - 1);
+                watersBeforeTheShip2 = (deckEnd.Item1 + 1, deckEnd.Item2 + 1);
+                watersBehindTheShip3 = (deckStart.Item1 - 1, deckStart.Item2 - 1);
+                watersBeforeTheShip3 = (deckEnd.Item1 - 1, deckEnd.Item2 + 1);
+            }
+
+            if (IsInBoundary(watersBeforeTheShip1))
+            {
+                neighbouringSpace.Add(watersBeforeTheShip1);
+            }
+
+            if (IsInBoundary(watersBehindTheShip1))
+            {
+                neighbouringSpace.Add(watersBehindTheShip1);
             }
             
-            neighbouringSpace.Add(watersBeforeTheShip);
-            neighbouringSpace.Add(watersBehindTheShip);
+            if (IsInBoundary(watersBeforeTheShip2))
+            {
+                neighbouringSpace.Add(watersBeforeTheShip2);
+            }
+
+            if (IsInBoundary(watersBehindTheShip2))
+            {
+                neighbouringSpace.Add(watersBehindTheShip2);
+            }           
+            if (IsInBoundary(watersBeforeTheShip3))
+            {
+                neighbouringSpace.Add(watersBeforeTheShip3);
+            }
+
+            if (IsInBoundary(watersBehindTheShip3))
+            {
+                neighbouringSpace.Add(watersBehindTheShip3);
+            }
 
             foreach (var position in Deck)
             {
