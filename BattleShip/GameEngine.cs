@@ -9,5 +9,15 @@ public class GameEngine
         return gameInstance ??= new GameEngine();
     }
 
-    public GameState CurrentState => GameState.ShipBoarding;
+    public GameState CurrentState { get; private set; } = GameState.ShipBoarding;
+
+    public void NextState()
+    {
+        CurrentState = CurrentState switch
+        {
+            GameState.ShipBoarding => GameState.ShipSinking,
+            GameState.ShipSinking => GameState.Win,
+            _ => CurrentState
+        };
+    }
 }

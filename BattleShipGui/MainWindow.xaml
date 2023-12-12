@@ -25,7 +25,7 @@
                                 Background="{Binding Path = Color}"
                                 Command="{Binding DataContext.RedButtonClickCommand, 
                                 RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
-                                CommandParameter="{Binding }" >
+                                CommandParameter="{Binding }">
                             </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -43,9 +43,8 @@
                         <DataTemplate>
                              <Button
                                  Background="{Binding Path = Color}"
-                                 Command="{Binding DataContext.BlueButtonClickCommand, 
-                                 RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
-                                 CommandParameter="{Binding }" >
+                                 Command="{Binding DataContext.BlueButtonClickCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
+                                 CommandParameter="{Binding }">
                              </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -55,25 +54,32 @@
         <StackPanel DockPanel.Dock="Right">
             <Button Command="{Binding SingleMastedShipBoardingButtonCommand}"
                     CommandParameter="{Binding Shipyard}"
-                    IsEnabled="{Binding IsBuildingSingleMastedPossible}">
+                    IsEnabled="{Binding IsBuildingSingleMastedPossible}"
+                    Visibility="{Binding ButtonsVisibility}">
                 1
             </Button>
             <Button Command="{Binding DoubleMastedShipBoardingButtonCommand}"
                     CommandParameter="{Binding Shipyard}"
-                    IsEnabled="{Binding IsBuildingDoubleMastedPossible}">
+                    IsEnabled="{Binding IsBuildingDoubleMastedPossible}"
+                    Visibility="{Binding ButtonsVisibility}">
                 2
             </Button>
             <Button Command="{Binding TripleMastedShipBoardingButtonCommand}"
                     CommandParameter="{Binding Shipyard}"
-                    IsEnabled="{Binding IsBuildingTripleMastedPossible}">
+                    IsEnabled="{Binding IsBuildingTripleMastedPossible}"
+                    Visibility="{Binding ButtonsVisibility}">
                 3
             </Button>
             <Button Command="{Binding QuadrupleMastedShipBoardingButtonCommand}"
                     CommandParameter="{Binding Shipyard}"
-                    IsEnabled="{Binding IsBuildingQuadrupleMastedPossible}">
+                    IsEnabled="{Binding IsBuildingQuadrupleMastedPossible}"
+                    Visibility="{Binding ButtonsVisibility}">
                 4
             </Button>
-            <Button>Done</Button>
+            <Button Command="{Binding BoardingFinishedCommand}"
+                    Visibility="{Binding ButtonsVisibility}"
+                >Done
+            </Button>
         </StackPanel>
     </DockPanel>
 </Window>

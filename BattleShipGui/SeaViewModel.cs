@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using BattleShip;
@@ -20,6 +21,7 @@ public class SeaViewModel : INotifyPropertyChanged
     {
         BlueButtonClickCommand = new RelayCommand(BlueButtonClickHandler);
         RedButtonClickCommand = new RelayCommand(RedButtonClickHandler);
+        BoardingFinishedCommand = new RelayCommand(BoardingFinishedButtonHandler);
         SingleMastedShipBoardingButtonCommand = new RelayCommand(singleMastedShipBoardingButtonHandler);
         DoubleMastedShipBoardingButtonCommand = new RelayCommand(doubleMastedShipBoardingButtonHandler);
         TripleMastedShipBoardingButtonCommand = new RelayCommand(tripleMastedShipBoardingButtonHandler);
@@ -80,7 +82,7 @@ public class SeaViewModel : INotifyPropertyChanged
             BlueSea.Add(new WaterButtonModel()
             {
                 WaterIdentifier = water.Key,
-                Color = ButtonColorMapper.Map(water.Value)
+                Color = ButtonColorMapper.MapBlue(water.Value)
             });
         }
         OnPropertyChanged(nameof(BlueSea));
@@ -89,15 +91,30 @@ public class SeaViewModel : INotifyPropertyChanged
     
     public ICommand RedButtonClickCommand { get; }
 
-    private void RedButtonClickHandler(object param)
+    private async void RedButtonClickHandler(object param)
     {
         if (param is not WaterButtonModel entry)
         {
             return;
         }
+
+        var sea = Sea.GetInstance();
+         
+        //Your shot
+        if (!await sea.TrySinkShip(entry.WaterIdentifier, Team.Red))
+        {
+            return;
+        }
         
-        Sea.GetInstance().RedWaters.TrySetState(entry.WaterIdentifier, SeaWaveState.Ship);
+        //Your opponent shot
+        await sea.TrySinkShip(sea.BlueWaters.States
+                .Where(kvp => kvp.Value != SeaWaveState.Wreck && kvp.Value != SeaWaveState.Disturbed)
+                .Shuffle(Random.Shared)
+                .First().Key,
+            Team.Blue);
+        
         UpdateRedSea();
+        UpdateBlueSea();
     }
     
     
@@ -110,7 +127,7 @@ public class SeaViewModel : INotifyPropertyChanged
             RedSea.Add(new WaterButtonModel
             {
                 WaterIdentifier = water.Key,
-                Color = ButtonColorMapper.Map(water.Value)
+                Color = ButtonColorMapper.MapRed(water.Value)
             });
         }
         OnPropertyChanged(nameof(RedSea));
@@ -151,10 +168,31 @@ public class SeaViewModel : INotifyPropertyChanged
         shipyard?.StartBuilding(ShipType.QuadrupleMasted, Team.Blue);
         countdown = 4;
     };
+
+    public ICommand BoardingFinishedCommand { get; }
+
+    private async void BoardingFinishedButtonHandler(object param)
+    {
+        var sea = Sea.GetInstance();
+        var redFleet = RedShipsShipyard.GenerateRedFleet();
+        foreach (var ship in redFleet)
+        {
+            await sea.TryBoardShip(ship);
+        }
+
+        GameEngine.GetInstance().NextState();
+        OnPropertyChanged(nameof(ButtonsVisibility));
+        UpdateRedSea();
+    }
+    
+    public Visibility ButtonsVisibility => GameEngine.GetInstance().CurrentState == GameState.ShipBoarding
+        ? Visibility.Visible
+        : Visibility.Hidden;
+    
     
     private static class ButtonColorMapper
     {
-        public static SolidColorBrush Map(SeaWaveState seaWaveState)
+        public static SolidColorBrush MapBlue(SeaWaveState seaWaveState)
         {
             return (int)seaWaveState switch
             {
@@ -167,42 +205,19 @@ public class SeaViewModel : INotifyPropertyChanged
                 _ => throw new ArgumentOutOfRangeException(nameof(seaWaveState), seaWaveState, null)
             };
         }
-
-        public static SeaWaveState Map(SolidColorBrush brush)
+        
+        public static SolidColorBrush MapRed(SeaWaveState seaWaveState)
         {
-            Color color = brush.Color;
-
-            if (color == Color.FromRgb(135, 206, 250))
+            return (int)seaWaveState switch
             {
-                return SeaWaveState.Free;
-            }
-
-            if (color == Color.FromRgb(255, 127, 80))
-            {
-                return SeaWaveState.WreckNearby;
-            }
-
-            if (color == Color.FromRgb(255, 0, 0))
-            {
-                return SeaWaveState.Wreck;
-            }
-
-            if (color == Color.FromRgb(169, 169, 169))
-            {
-                return SeaWaveState.ShipNearby;
-            }
-
-            if (color == Color.FromRgb(0, 255, 0))
-            {
-                return SeaWaveState.Ship;
-            }
-
-            if (color == Color.FromRgb(75, 0, 130))
-            {
-                return SeaWaveState.Disturbed;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(color), color, null);
+                0 => new SolidColorBrush(Color.FromRgb(135, 206, 250)), // Azure
+                < 0 and > -10  => new SolidColorBrush(Color.FromRgb(135, 206, 250)), // Azure
+                -10 => new SolidColorBrush(Color.FromRgb(255, 0, 0)), // Red
+                > 0 and < 10   => new SolidColorBrush(Color.FromRgb(135, 206, 250)), // Azure
+                10 => new SolidColorBrush(Color.FromRgb(135, 206, 250)), // Azure
+                int.MaxValue => new SolidColorBrush(Color.FromRgb(75, 0, 130)), // Indigo
+                _ => throw new ArgumentOutOfRangeException(nameof(seaWaveState), seaWaveState, null)
+            };
         }
     }
 }
