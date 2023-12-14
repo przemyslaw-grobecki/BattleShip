@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using BattleShip;
 
 namespace BattleShipGui;
@@ -34,8 +35,6 @@ public class SeaViewModel : INotifyPropertyChanged
     
     public event PropertyChangedEventHandler? PropertyChanged;
     public Shipyard Shipyard { get; } = new();
-    public bool IsBlueSeaClickable => GameEngine.GetInstance().CurrentState is GameState.ShipBoarding;
-    public bool IsRedSeaClickable => GameEngine.GetInstance().CurrentState is GameState.ShipSinking;
     public ObservableCollection<WaterButtonModel> BlueSea { get; }
     public ObservableCollection<WaterButtonModel> RedSea { get; }
     public ICommand BlueButtonClickCommand { get; }
@@ -86,6 +85,13 @@ public class SeaViewModel : INotifyPropertyChanged
             });
         }
         OnPropertyChanged(nameof(BlueSea));
+        if (blueSea.Values.Count(val => val == SeaWaveState.Wreck) == 20)
+        {
+            GameEngine.GetInstance().NextState();
+            GameResult = "win.jpg";
+            OnPropertyChanged(nameof(GameResult));
+            OnPropertyChanged(nameof(IsGameEnded));
+        }
     }
     
     
@@ -99,20 +105,26 @@ public class SeaViewModel : INotifyPropertyChanged
         }
 
         var sea = Sea.GetInstance();
-         
-        //Your shot
-        if (!await sea.TrySinkShip(entry.WaterIdentifier, Team.Red))
+        if (sea.RedWaters.IsStateEqualTo(entry.WaterIdentifier, SeaWaveState.Wreck) ||
+            sea.RedWaters.IsStateEqualTo(entry.WaterIdentifier, SeaWaveState.Disturbed))
         {
             return;
         }
         
-        //Your opponent shot
-        await sea.TrySinkShip(sea.BlueWaters.States
-                .Where(kvp => kvp.Value != SeaWaveState.Wreck && kvp.Value != SeaWaveState.Disturbed)
-                .Shuffle(Random.Shared)
-                .First().Key,
-            Team.Blue);
-        
+        //Your shot
+        if (!await sea.TrySinkShip(entry.WaterIdentifier, Team.Red))
+        {
+            //Your opponent shot
+            while (await sea.TrySinkShip(sea.BlueWaters.States
+                           .Where(kvp => kvp.Value != SeaWaveState.Wreck && kvp.Value != SeaWaveState.Disturbed)
+                           .Shuffle(Random.Shared)
+                           .First().Key,
+                       Team.Blue))
+            {
+                //nop
+            }
+        }
+
         UpdateRedSea();
         UpdateBlueSea();
     }
@@ -131,6 +143,13 @@ public class SeaViewModel : INotifyPropertyChanged
             });
         }
         OnPropertyChanged(nameof(RedSea));
+        if (redSea.Values.Count(val => val == SeaWaveState.Wreck) == 20)
+        {
+            GameEngine.GetInstance().NextState();
+            GameResult = "lose.jpg";
+            OnPropertyChanged(nameof(GameResult));
+            OnPropertyChanged(nameof(IsGameEnded));
+        }
     }
     
     public ICommand SingleMastedShipBoardingButtonCommand { get; }
@@ -138,8 +157,11 @@ public class SeaViewModel : INotifyPropertyChanged
     private readonly Action<object> singleMastedShipBoardingButtonHandler = param =>
     {
         var shipyard = param as Shipyard;
-        shipyard?.StartBuilding(ShipType.SingleMasted, Team.Blue);
-        countdown = 1;
+        if (shipyard.CurrentShipBuilding is not null) return;
+        if (shipyard.TryStartBuilding(ShipType.SingleMasted, Team.Blue))
+        {
+            countdown = 1;
+        }
     };
     
     public ICommand DoubleMastedShipBoardingButtonCommand { get; }
@@ -147,8 +169,11 @@ public class SeaViewModel : INotifyPropertyChanged
     private readonly Action<object> doubleMastedShipBoardingButtonHandler = param =>
     {
         var shipyard = param as Shipyard;
-        shipyard?.StartBuilding(ShipType.DoubleMasted, Team.Blue);
-        countdown = 2;
+        if (shipyard.CurrentShipBuilding is not null) return;
+        if(shipyard.TryStartBuilding(ShipType.DoubleMasted, Team.Blue))
+        {
+            countdown = 2;
+        }
     };
     
     public ICommand TripleMastedShipBoardingButtonCommand { get; }
@@ -156,8 +181,11 @@ public class SeaViewModel : INotifyPropertyChanged
     private readonly Action<object> tripleMastedShipBoardingButtonHandler = param =>
     {
         var shipyard = param as Shipyard;
-        shipyard?.StartBuilding(ShipType.TripleMasted, Team.Blue);
-        countdown = 3;
+        if (shipyard.CurrentShipBuilding is not null) return;
+        if (shipyard.TryStartBuilding(ShipType.TripleMasted, Team.Blue))
+        {
+            countdown = 3;
+        }
     };
     
     public ICommand QuadrupleMastedShipBoardingButtonCommand { get; }
@@ -165,8 +193,11 @@ public class SeaViewModel : INotifyPropertyChanged
     private readonly Action<object> quadrupleMastedShipBoardingButtonHandler = param =>
     {
         var shipyard = param as Shipyard;
-        shipyard?.StartBuilding(ShipType.QuadrupleMasted, Team.Blue);
-        countdown = 4;
+        if (shipyard.CurrentShipBuilding is not null) return;
+        if (shipyard.TryStartBuilding(ShipType.QuadrupleMasted, Team.Blue))
+        {
+            countdown = 4;
+        }
     };
 
     public ICommand BoardingFinishedCommand { get; }
@@ -182,13 +213,19 @@ public class SeaViewModel : INotifyPropertyChanged
 
         GameEngine.GetInstance().NextState();
         OnPropertyChanged(nameof(ButtonsVisibility));
+        OnPropertyChanged(nameof(IsBlueSeaEnabled));
+        OnPropertyChanged(nameof(IsRedSeaEnabled));
         UpdateRedSea();
     }
     
     public Visibility ButtonsVisibility => GameEngine.GetInstance().CurrentState == GameState.ShipBoarding
         ? Visibility.Visible
         : Visibility.Hidden;
-    
+
+    public string GameResult { get; private set; } = "lose.png";
+    public Visibility IsGameEnded => GameEngine.GetInstance().CurrentState == GameState.End ? Visibility.Visible : Visibility.Hidden;
+    public bool IsBlueSeaEnabled => GameEngine.GetInstance().CurrentState == GameState.ShipBoarding || GameEngine.GetInstance().CurrentState == GameState.ShipSinking;
+    public bool IsRedSeaEnabled => GameEngine.GetInstance().CurrentState == GameState.ShipSinking;
     
     private static class ButtonColorMapper
     {

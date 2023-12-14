@@ -11,4 +11,15 @@
       <ProjectReference Include="..\BattleShip\BattleShip.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="img\lose.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <EmbeddedResource Include="img\win.png">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </EmbeddedResource>
+      <None Remove="win.png" />
+      <None Remove="lose.png" />
+    </ItemGroup>
+
 </Project>

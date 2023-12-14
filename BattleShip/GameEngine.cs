@@ -16,7 +16,7 @@ public class GameEngine
         CurrentState = CurrentState switch
         {
             GameState.ShipBoarding => GameState.ShipSinking,
-            GameState.ShipSinking => GameState.Win,
+            GameState.ShipSinking => GameState.End,
             _ => CurrentState
         };
     }

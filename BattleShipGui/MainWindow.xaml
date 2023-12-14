@@ -10,7 +10,13 @@
     <Window.DataContext>
         <local:SeaViewModel/>
     </Window.DataContext>
+    
     <DockPanel>
+        <Canvas>
+            <Image Source="img/lose.png" Canvas.Bottom="400">
+                
+            </Image>
+        </Canvas>
         <DockPanel DockPanel.Dock="Left">
             <Grid DockPanel.Dock="Top">
                 <ItemsControl ItemsSource="{Binding RedSea}" BorderThickness="2">
@@ -25,13 +31,13 @@
                                 Background="{Binding Path = Color}"
                                 Command="{Binding DataContext.RedButtonClickCommand, 
                                 RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
+                                IsEnabled="{Binding DataContext.IsRedSeaEnabled, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                 CommandParameter="{Binding }">
                             </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </Grid>
-            
             <Grid DockPanel.Dock="Bottom">
                 <ItemsControl ItemsSource="{Binding BlueSea}" BorderThickness="2">
                    <ItemsControl.ItemsPanel>
@@ -44,6 +50,7 @@
                              <Button
                                  Background="{Binding Path = Color}"
                                  Command="{Binding DataContext.BlueButtonClickCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
+                                 IsEnabled="{Binding DataContext.IsBlueSeaEnabled, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                  CommandParameter="{Binding }">
                              </Button>
                         </DataTemplate>

@@ -19,32 +19,32 @@ public class Shipyard : INotifyPropertyChanged
     
     public IShipBuilderExtender? CurrentShipBuilding { get; private set; }
 
-    public void StartBuilding(ShipType type, Team team)
+    public bool TryStartBuilding(ShipType type, Team team)
     {
         switch (type)
         {
             case ShipType.SingleMasted:
                 if (availableSingleMastedShips < 1)
                 {
-                    return;
+                    return false;
                 }
                 break;
             case ShipType.DoubleMasted:
                 if (availableDoubleMastedShips < 1)
                 {
-                    return;
+                    return false;
                 }
                 break;
             case ShipType.TripleMasted:
                 if (availableTripleMastedShips < 1)
                 {
-                    return;
+                    return false;
                 }
                 break;
             case ShipType.QuadrupleMasted:
                 if (availableTripleMastedShips < 1)
                 {
-                    return;
+                    return false;
                 }
                 break;
             default:
@@ -59,6 +59,7 @@ public class Shipyard : INotifyPropertyChanged
         OnPropertyChanged(nameof(IsBuildingDoubleMastedPossible));
         OnPropertyChanged(nameof(IsBuildingTripleMastedPossible));
         OnPropertyChanged(nameof(IsBuildingQuadrupleMastedPossible));
+        return true;
     }
 
     public void FinishBuilding(out Ship? ship)
