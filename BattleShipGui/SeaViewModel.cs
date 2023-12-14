@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using BattleShip;
 
 namespace BattleShipGui;
@@ -81,6 +80,7 @@ public class SeaViewModel : INotifyPropertyChanged
             BlueSea.Add(new WaterButtonModel()
             {
                 WaterIdentifier = water.Key,
+                State = water.Value,
                 Color = ButtonColorMapper.MapBlue(water.Value)
             });
         }
@@ -88,7 +88,7 @@ public class SeaViewModel : INotifyPropertyChanged
         if (blueSea.Values.Count(val => val == SeaWaveState.Wreck) == 20)
         {
             GameEngine.GetInstance().NextState();
-            GameResult = "win.jpg";
+            GameResult = "img/lose.png";
             OnPropertyChanged(nameof(GameResult));
             OnPropertyChanged(nameof(IsGameEnded));
         }
@@ -139,6 +139,7 @@ public class SeaViewModel : INotifyPropertyChanged
             RedSea.Add(new WaterButtonModel
             {
                 WaterIdentifier = water.Key,
+                State = water.Value,
                 Color = ButtonColorMapper.MapRed(water.Value)
             });
         }
@@ -146,7 +147,7 @@ public class SeaViewModel : INotifyPropertyChanged
         if (redSea.Values.Count(val => val == SeaWaveState.Wreck) == 20)
         {
             GameEngine.GetInstance().NextState();
-            GameResult = "lose.jpg";
+            GameResult = "img/win.png";
             OnPropertyChanged(nameof(GameResult));
             OnPropertyChanged(nameof(IsGameEnded));
         }
@@ -210,7 +211,7 @@ public class SeaViewModel : INotifyPropertyChanged
         {
             await sea.TryBoardShip(ship);
         }
-
+        
         GameEngine.GetInstance().NextState();
         OnPropertyChanged(nameof(ButtonsVisibility));
         OnPropertyChanged(nameof(IsBlueSeaEnabled));
@@ -222,7 +223,7 @@ public class SeaViewModel : INotifyPropertyChanged
         ? Visibility.Visible
         : Visibility.Hidden;
 
-    public string GameResult { get; private set; } = "lose.png";
+    public string GameResult { get; private set; } = "img/win.png";
     public Visibility IsGameEnded => GameEngine.GetInstance().CurrentState == GameState.End ? Visibility.Visible : Visibility.Hidden;
     public bool IsBlueSeaEnabled => GameEngine.GetInstance().CurrentState == GameState.ShipBoarding || GameEngine.GetInstance().CurrentState == GameState.ShipSinking;
     public bool IsRedSeaEnabled => GameEngine.GetInstance().CurrentState == GameState.ShipSinking;

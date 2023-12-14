@@ -12,12 +12,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="img\lose.png">
+      <Content Include="img\lose.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </EmbeddedResource>
-      <EmbeddedResource Include="img\win.png">
+      </Content>
+      <Content Include="img\win.png">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </EmbeddedResource>
+      </Content>
       <None Remove="win.png" />
       <None Remove="lose.png" />
     </ItemGroup>

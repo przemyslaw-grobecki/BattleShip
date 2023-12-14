@@ -9,13 +9,13 @@
     
     <Window.DataContext>
         <local:SeaViewModel/>
-    </Window.DataContext>
+    </Window.DataContext> 
     
     <DockPanel>
         <Canvas>
-            <Image Source="img/lose.png" Canvas.Bottom="400">
-                
-            </Image>
+            <Image Source="{Binding GameResult}" 
+                   Visibility="{Binding IsGameEnded}"
+                   Canvas.Bottom="400"  />
         </Canvas>
         <DockPanel DockPanel.Dock="Left">
             <Grid DockPanel.Dock="Top">
@@ -28,6 +28,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Button
+                                Content="{Binding Signature}"
                                 Background="{Binding Path = Color}"
                                 Command="{Binding DataContext.RedButtonClickCommand, 
                                 RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
@@ -48,6 +49,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                              <Button
+                                 Content="{Binding Signature}"
                                  Background="{Binding Path = Color}"
                                  Command="{Binding DataContext.BlueButtonClickCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
                                  IsEnabled="{Binding DataContext.IsBlueSeaEnabled, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
